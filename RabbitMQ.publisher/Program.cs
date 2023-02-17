@@ -10,16 +10,17 @@ var factory = new ConnectionFactory()
 
 using var connection = factory.CreateConnection();
 var channel = connection.CreateModel();
+
 //exclure eğer true yaparsak saece bu kanal üzerinden ulaşabilirz. Ama biz başka processlerden ulaşmmak için false deriz
+///channel.QueueDeclare("hello-queue", true, false,false);//exchange kullanmadan direkt kuyruk declare etmiştik 
 
-
-channel.QueueDeclare("hello-queue", true, false,false);//exchange kullanmadan direkt kuyruk declare etmiştik 
+channel.ExchangeDeclare("logs-fanout",durable:true,type:ExchangeType.Fanout);
 
 Enumerable.Range(1, 50).ToList().ForEach(x =>
 {
     string message = $"Message{x}";
     var messageBody = Encoding.UTF8.GetBytes(message);
-    channel.BasicPublish(string.Empty, "hello-queue", null, messageBody);
+    channel.BasicPublish("logs-fanout", " ",null, messageBody);
     Console.WriteLine($"Mesaj gönderildi: {message}");
 });
 Console.ReadLine();

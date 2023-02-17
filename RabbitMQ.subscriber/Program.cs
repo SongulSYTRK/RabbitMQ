@@ -15,14 +15,23 @@ var channel = connection.CreateModel();
 //kıuyruk var olduğu için hata olmaz.Burda yazamasak da olur zaten kuyruk publisher da oluştu
 //channel.QueueDeclare("hello-queue", true, false);
 
+
+//channel.ExchangeDeclare("logs-fanout", durable: true, type: ExchangeType.Fanout);
+
+var randomQueueName = "log-database-save";// channel.QueueDeclare().QueueName;
+
+channel.QueueDeclare(randomQueueName, true, false, false);
+channel.QueueBind(randomQueueName, "logs-fanout","",null);
+
 channel.BasicQos(0,1,false);
 var consumer = new EventingBasicConsumer(channel);
-channel.BasicConsume("hello-queue", false, consumer);
+channel.BasicConsume(randomQueueName, false, consumer);
+Console.WriteLine("loglar dinleniyor ");
 consumer.Received += (object sender, BasicDeliverEventArgs e) =>
 {
     var message = Encoding.UTF8.GetString(e.Body.ToArray());
 
-    Thread.Sleep(1500);
+    Thread.Sleep(150);
     Console.WriteLine("GelenMessage :" + message);
     channel.BasicAck(e.DeliveryTag, false);
 };
