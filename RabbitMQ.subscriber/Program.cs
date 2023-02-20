@@ -18,14 +18,18 @@ var channel = connection.CreateModel();
 
 //channel.ExchangeDeclare("logs-fanout", durable: true, type: ExchangeType.Fanout);
 
-var randomQueueName = "log-database-save";// channel.QueueDeclare().QueueName;
+///var randomQueueName = "log-database-save";// channel.QueueDeclare().QueueName;
 
-channel.QueueDeclare(randomQueueName, true, false, false);
-channel.QueueBind(randomQueueName, "logs-fanout","",null);
+//channel.QueueDeclare(randomQueueName, true, false, false);
+///channel.QueueBind(randomQueueName, "logs-fanout","",null);
+
+
 
 channel.BasicQos(0,1,false);
 var consumer = new EventingBasicConsumer(channel);
-channel.BasicConsume(randomQueueName, false, consumer);
+
+var queueName = "direct-queue-Critical";
+channel.BasicConsume(queueName, false, consumer);
 Console.WriteLine("loglar dinleniyor ");
 consumer.Received += (object sender, BasicDeliverEventArgs e) =>
 {
@@ -33,6 +37,8 @@ consumer.Received += (object sender, BasicDeliverEventArgs e) =>
 
     Thread.Sleep(150);
     Console.WriteLine("GelenMessage :" + message);
+    File.AppendAllText("log-critical.txt",message + "\n");
+
     channel.BasicAck(e.DeliveryTag, false);
 };
 
