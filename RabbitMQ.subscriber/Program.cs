@@ -28,7 +28,11 @@ var channel = connection.CreateModel();
 channel.BasicQos(0,1,false);
 var consumer = new EventingBasicConsumer(channel);
 
-var queueName = "direct-queue-Critical";
+//var queueName = "direct-queue-Critical";
+var queueName = channel.QueueDeclare().QueueName;
+var routeKey = "*.Error.*";
+channel.QueueBind(queueName, "logs-topic",routeKey);
+
 channel.BasicConsume(queueName, false, consumer);
 Console.WriteLine("loglar dinleniyor ");
 consumer.Received += (object sender, BasicDeliverEventArgs e) =>

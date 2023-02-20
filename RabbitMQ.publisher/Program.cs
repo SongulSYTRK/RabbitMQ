@@ -16,25 +16,35 @@ var channel = connection.CreateModel();
 //exclure eğer true yaparsak saece bu kanal üzerinden ulaşabilirz. Ama biz başka processlerden ulaşmmak için false deriz
 ///channel.QueueDeclare("hello-queue", true, false,false);//exchange kullanmadan direkt kuyruk declare etmiştik 
 
-channel.ExchangeDeclare("logs-direct",durable:true,type:ExchangeType.Direct);
+channel.ExchangeDeclare("logs-topic",durable:true,type:ExchangeType.Topic);
 var x = Enum.GetNames(typeof(LogNames)).ToList();
 x.ForEach(x =>
 {
-    var routeKey = $"route-{x}";
+    Random rnd=new Random();
+
+    /* var routeKey = $"route-{x}";
     var queueName = $"direct-queue-{x}";
     channel.QueueDeclare(queueName, true, false, false);
-    channel.QueueBind(queueName, "logs-direct", routeKey, null);
+    channel.QueueBind(queueName, "logs-direct", routeKey, null);*/
 });
+
+Random rnd=new Random ();
 Enumerable.Range(1, 50).ToList().ForEach(x =>
 {
-    LogNames log =(LogNames) new Random().Next(1,5);
-    string message = $"log-type:{log}";
+  //  LogNames log =(LogNames) new Random().Next(1,5);
+  
 
-  //  string message = $"Message{x}";
+  //  string message = $"Message{x}";  
+
+    LogNames log1 = (LogNames)rnd.Next(1, 5);
+    LogNames log2 = (LogNames)rnd.Next(1, 5);
+    LogNames log3 = (LogNames)rnd.Next(1, 5);
+
+    var routeKey = $"{log1}.{log2}.{log3}";
+    string message = $"log-type:{log1}-{log2}-{log3}";
     var messageBody = Encoding.UTF8.GetBytes(message);
-
-    var routeKey = $"route-{log}";
-    channel.BasicPublish("logs-direct",routeKey,null, messageBody);
+    //  var routeKey = $"route-{log}";
+    channel.BasicPublish("logs-topic",routeKey,null, messageBody);
 
     Console.WriteLine($"Log gönderildi: {message}");
 });
